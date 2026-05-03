@@ -1,0 +1,54 @@
+{
+  "_comment": "Canonical IDA-SPADE configuration (fixed across NSL-KDD, UNSW-NB15, CIC-IDS-2017). UNSW-NB15 is the development stream for hyperparameter selection.",
+  "ecba": {
+    "window_T": 1000,
+    "non_overlapping": true
+  },
+  "pc_drift_forecasting": {
+    "embedding_dim_E": 3,
+    "time_delay_tau": 1,
+    "lid_threshold": 15.0,
+    "lid_K": 10,
+    "drift_sensitivity_sigma": 1.0,
+    "topology_weights": {"w_d": 0.34, "w_c": 0.33, "w_m": 0.33},
+    "lambda_decay": 1.0,
+    "eta_pc": 1.0,
+    "epsilon": 1e-08,
+    "warmup_w": 8
+  },
+  "model": {
+    "mlp_hidden": [128, 64, 32],
+    "optimizer": "adam",
+    "learning_rate": 0.001,
+    "dropout": 0.2,
+    "batch_size": 32,
+    "ewc_lambda": 0.1
+  },
+  "contrastive": {
+    "alpha": 0.15,
+    "temperature_tau_sc": 0.1,
+    "projection_head": [32, 32, 32]
+  },
+  "prototype": {
+    "beta_quiet": 0.99,
+    "beta_hot": 0.90,
+    "K_hot_cooldown": 3,
+    "lambda_p_quiet": 0.2,
+    "lambda_p_reversal": 0.6,
+    "theta_reversal": 0.3,
+    "N_freeze_quiet": 15
+  },
+  "evaluation": {
+    "fading_factor": 0.998,
+    "zero_division": 1,
+    "label_budget_per_window": 0.01,
+    "bootstrap_pool_fraction": 0.20,
+    "five_seeds":  [42, 123, 456, 789, 1024],
+    "ten_seeds":   [42, 123, 456, 789, 1024, 2048, 3333, 4096, 5555, 7777]
+  },
+  "behavioral_indicator_dim_M": {
+    "NSL-KDD":     45,
+    "UNSW-NB15":   56,
+    "CIC-IDS-2017": 36
+  }
+}

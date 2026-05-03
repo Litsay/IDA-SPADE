@@ -1,0 +1,50 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Datasets and result artifacts (users provide their own data)
+NSL_pre_data/
+UNSW_pre_data/
+CIC_pre_data/
+data/
+datasets/
+experiment_results/
+results/
+*.npy
+*.npz
+*.pkl
+*.pt
+*.pth
+*.ckpt
+
+# Logs
+*.log
+*.out
+
+# Plots / large figures (regenerate via scripts)
+figures/
+*.pdf
+*.eps
+*.svg
+*.png
+!docs/**/*.png
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual envs
+.venv/
+venv/
+env/
