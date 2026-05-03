@@ -7,11 +7,15 @@ Analysis on Drift Adaptation**
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.8-ee4c2c)](https://pytorch.org/)
 
-This repository is the official implementation of the paper
+This repository contains the implementation and reproduction scripts
+accompanying the manuscript
 
 > *From Observation to Analysis: Network Intrusion Detection Based on
-> Spatio-Temporal Potential Causality*, IEEE Transactions on Dependable and
-> Secure Computing (TDSC), 2026.
+> Spatio-Temporal Potential Causality*
+
+which is currently under submission to IEEE Transactions on Dependable and
+Secure Computing (TDSC). The repository will be updated as the manuscript
+is reviewed and revised.
 
 IDA-SPADE replaces the dominant *reactive* (observe-respond) drift-adaptation
 paradigm in continual-learning network intrusion detection (CL-NID) with a
@@ -30,13 +34,21 @@ paradigm in continual-learning network intrusion detection (CL-NID) with a
    supervised contrastive regularizer that aligns representations with the
    PC-DriftForecasting coupling structure.
 
-Headline results (prequential evaluation, see Tab.~I of the paper):
+## Main results
+
+Prequential evaluation under a `1%` per-window expert-label budget and a
+`20%` initial bootstrap pool. Numbers are mean ± std across 5 seeds (10 seeds
+on NSL-KDD and UNSW-NB15 for IDA-SPADE).
 
 | Dataset | IDA-SPADE F1 | Best baseline | Margin |
 | --- | --- | --- | --- |
-| NSL-KDD (near stationary) | **98.58 ± 0.13** | CIDS 98.25 | +0.33 (p < 0.001) |
-| UNSW-NB15 (moderate drift) | **94.40 ± 0.78** | CIDS 91.88 | +2.52 (p < 0.001) |
-| CIC-IDS-2017 (high drift) | **83.69 ± 0.99** | CARD 75.10 | +8.59 (p < 0.005) |
+| NSL-KDD (near stationary) | **98.58 ± 0.13** | CIDS 98.25 | +0.33 (Welch's *p* < 0.001) |
+| UNSW-NB15 (moderate drift) | **94.40 ± 0.78** | CIDS 91.88 | +2.52 (*p* < 0.001) |
+| CIC-IDS-2017 (high drift) | **83.69 ± 0.99** | CARD 75.10 | +8.59 (*p* < 0.005) |
+
+The advantage over the runner-up grows with dataset drift intensity, which
+is the regime where the proactive paradigm of IDA-SPADE is designed to
+matter.
 
 ## Quick start
 
@@ -53,23 +65,25 @@ pip install -r requirements.txt
 #    UNSW_pre_data/{UNSWTrain,UNSWTest}.csv
 #    CIC_pre_data/CIC-IDS-2017_full.csv
 
-# 3) reproduce Table I (streaming effectiveness)
-python scripts/run_b1_tab1.py
+# 3) reproduce the main result tables one by one
+export PYTHONPATH=.
+python scripts/run_b1_tab1.py     # Tab.I  streaming effectiveness (8 baselines)
+python scripts/run_b1_tab3.py     # Tab.II + Tab.III drift alert + drift-period
+python scripts/run_b1_tab4.py     # Tab.IV  seven-variant ablation
+python scripts/run_b1_tab5.py     # Tab.V   sensitivity (alpha, sigma, K_hot)
+python scripts/run_b1_tab5_ext.py # Tab.V   sensitivity (theta_LID, beta_hot, lambda_p)
+python scripts/run_b1_tab6.py     # Tab.VI  computational profiling
 
-# 4) reproduce Table IV (seven-variant ablation including
-#    the combined Reactive&NoProto cell)
-python scripts/run_b1_tab4.py
+# or, all of the above in one shot (~14-18 hours on a single GPU):
+python scripts/run_b1_all.py
 ```
-
-The `scripts/` directory contains one runner per paper artifact; see
-[docs/REPRODUCE.md](docs/REPRODUCE.md) for the complete map.
 
 ## Repository layout
 
 ```
-IDA-SPADE-release/
+IDA-SPADE/
 ├── src/
-│   └── ida_spade_singlefile.py       # standalone single-file pipeline (CLI)
+│   └── ida_spade_singlefile.py       # standalone single-file CLI pipeline
 ├── experiments/                       # streaming evaluation framework
 │   ├── ida_spade_wrapper.py           # IDA-SPADE as StreamingModel
 │   ├── ida_spade_b1.py                # ablation variants used in Tab.IV
@@ -77,16 +91,9 @@ IDA-SPADE-release/
 │   ├── streaming_interface.py         # StreamingModel ABC
 │   ├── evaluator.py                   # prequential test-then-train loop
 │   ├── data_loader.py                 # NSL/UNSW/CIC loaders
-│   ├── drift_injection.py             # synthetic drift utilities
-│   ├── knowledge_retention.py         # forgetting metrics
-│   ├── ablation.py                    # ablation harness
 │   ├── config.py                      # hyperparameters and dataset paths
-│   ├── compare_settings.py            # cross-protocol settings checks
-│   ├── export.py                      # JSON / CSV export helpers
-│   ├── run_all.py                     # phase-by-phase orchestrator
-│   ├── run_cic_full_eval.py           # CIC-only end-to-end runner
-│   ├── run_cic_perday.py              # CIC per-day analysis
-│   └── baselines/                     # streaming wrappers for baselines
+│   ├── ablation.py / drift_injection.py / knowledge_retention.py / ...
+│   └── baselines/                     # streaming wrappers for 10 baselines
 │       ├── ssf_baseline.py            # Zhang INFOCOM 2025
 │       ├── aoc_ids.py                 # Zhang INFOCOM 2024
 │       ├── card_baseline.py           # Huang TDSC 2025
@@ -94,32 +101,19 @@ IDA-SPADE-release/
 │       ├── feco_baseline.py           # Wang INFOCOM 2022
 │       ├── unflows_baseline.py        # Yang TIFS 2025
 │       ├── ewc_baseline.py            # Kirkpatrick PNAS 2017
-│       ├── lwf_baseline.py            # Li TPAMI 2018
-│       ├── feco_adwin.py              # FeCo + ADWIN drift handler
-│       └── unflows_adwin.py           # unFlowS + ADWIN drift handler
-├── scripts/                           # per-table / per-figure runners
-│   ├── run_b1_tab1.py                 # Tab.I main metrics
+│       └── lwf_baseline.py            # Li TPAMI 2018
+├── scripts/                           # paper-table reproduction runners
+│   ├── run_b1_tab1.py                 # Tab.I  main metrics
 │   ├── run_b1_tab3.py                 # Tab.II + Tab.III drift analysis
 │   ├── run_b1_tab4.py                 # Tab.IV seven-variant ablation
-│   ├── run_b1_tab5.py                 # Tab.V (alpha, sigma, K_hot)
-│   ├── run_b1_tab5_ext.py             # Tab.V extension (theta_LID, beta_hot, lambda_p)
+│   ├── run_b1_tab5.py                 # Tab.V  alpha / sigma / K_hot
+│   ├── run_b1_tab5_ext.py             # Tab.V  theta_LID / beta_hot / lambda_p
 │   ├── run_b1_tab6.py                 # Tab.VI runtime profiling
-│   ├── run_b1_all.py                  # one-shot reproduction
-│   ├── compute_fnn_mi.py              # FNN / mutual-information diagnostics
-│   ├── collect_fig3_data.py           # Fig.3 per-window F1 trace
-│   ├── gen_fig3_v2.py                 # Fig.3 renderer
-│   ├── gen_fig4_v2.py                 # Fig.4 drift-period comparison
-│   ├── gen_b1_tsne.py                 # Fig.5 t-SNE
-│   ├── gen_b1_figures.py              # auxiliary figure generators
-│   ├── gen_drift_period_fig.py        # alternative drift-period plot
-│   ├── run_t21_hot_mode_stats.py      # supplementary hot-mode duty cycle
-│   ├── run_t22_random_alert.py        # supplementary random-alert baseline
-│   └── run_t24_repr_quality.py        # supplementary silhouette / purity
+│   └── run_b1_all.py                  # one-shot reproduction
 ├── configs/
 │   └── canonical.json                 # the canonical hyperparameter file
 ├── docs/
-│   ├── DATASETS.md                    # dataset download + preprocessing
-│   └── REPRODUCE.md                   # per-table / per-figure replication
+│   └── DATASETS.md                    # dataset download + preprocessing
 ├── requirements.txt
 ├── LICENSE                            # MIT
 └── README.md
@@ -150,41 +144,13 @@ Key knobs (paper notation):
 | Prototype | `theta_rev` | 0.3 |
 | Backbone freeze | `N_freeze` | 15 consecutive quiet windows |
 
-## Citing
+## Hardware
 
-If you use this code or build on the proactive drift-adaptation paradigm,
-please cite:
-
-```bibtex
-@article{Li:TDSC-2026,
-  title   = {From Observation to Analysis: Network Intrusion Detection Based on Spatio-Temporal Potential Causality},
-  author  = {Siyu Li and Jin Yang},
-  journal = {IEEE Transactions on Dependable and Secure Computing},
-  year    = {2026},
-  note    = {To appear},
-}
-```
+All experiments in the paper were performed on a single workstation with one
+NVIDIA GPU (CUDA 12.6, PyTorch 2.8, NumPy 1.26, pandas 2.3, River 0.21).
 
 ## License
 
 This project is released under the [MIT License](LICENSE). Datasets are
 distributed under their original licenses; please review and accept those
 before downloading (see [docs/DATASETS.md](docs/DATASETS.md)).
-
-## Acknowledgments
-
-This work is supported by the National Natural Science Foundation of China
-(Grants No.~61872254 and No.~62162057), the Key Lab of Information Network
-Security of Ministry of Public Security (Grant No.~C20606), and the Sichuan
-Science and Technology Program (Grant No.~2021JDRC0004).
-
-The PC-DriftForecasting module builds on the Pattern Causality framework of
-Stavroglou et al. (PNAS, 2020) and the convergent cross-mapping machinery of
-Sugihara et al. (Science, 2012); see Sec.~II-B of the paper for the
-theoretical background.
-
-## Contact
-
-Questions, issues, and reproduction reports are welcome via GitHub Issues, or
-by email to `sy_lee_real@icloud.com` (corresponding author: Jin Yang,
-`yj@scu.edu.cn`).
