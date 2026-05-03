@@ -42,7 +42,7 @@ Headline results (prequential evaluation, see Tab.~I of the paper):
 
 ```bash
 # 1) clone and create the environment
-git clone https://github.com/<TBD-USER>/IDA-SPADE.git
+git clone https://github.com/Litsay/IDA-SPADE.git
 cd IDA-SPADE
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
