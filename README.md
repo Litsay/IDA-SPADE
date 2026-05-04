@@ -154,4 +154,3 @@ NVIDIA GPU (CUDA 12.6, PyTorch 2.8, NumPy 1.26, pandas 2.3, River 0.21).
 This project is released under the [MIT License](LICENSE). Datasets are
 distributed under their original licenses; please review and accept those
 before downloading (see [docs/DATASETS.md](docs/DATASETS.md)).
-
